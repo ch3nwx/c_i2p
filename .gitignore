@@ -1,0 +1,9 @@
+.venv/
+.claude/
+*.log
+a.out
+.DS_Store/
+.vscode/
+*.dSYM
+
+
