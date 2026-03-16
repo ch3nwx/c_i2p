@@ -2,7 +2,7 @@
 .claude/
 *.log
 a.out
-.DS_Store/
+.DS_Store
 .vscode/
 *.dSYM
 
