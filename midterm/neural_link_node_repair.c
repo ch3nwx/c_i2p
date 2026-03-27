@@ -10,7 +10,7 @@
 //  checksum low byte
 bool overload(uint32_t S) {
   uint32_t mask = (1 << 2) - 1;
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 31; i++) {
     if ((S & mask) == 3)
       return true;
     S >>= 1;
@@ -19,7 +19,7 @@ bool overload(uint32_t S) {
 }
 uint32_t LSB(uint32_t S) {
   uint32_t m_LSB = 1U;
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 32; i++) {
     if ((S & m_LSB) == 1) {
       return (1U << i);
     }
@@ -30,7 +30,7 @@ uint32_t LSB(uint32_t S) {
 uint32_t MSB(uint32_t S) {
   uint32_t m_MSB = 0x80000000;
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 32; i++) {
     if ((S & m_MSB) == 0x80000000) {
       return (0x80000000 >> i);
     }
@@ -41,19 +41,19 @@ uint32_t MSB(uint32_t S) {
 uint32_t bridging(uint32_t S) {
   if (MSB(S) == 0 || LSB(S) == 0)
     return S;
-  uint32_t m_NOT = (MSB(S) - 1) & ~(LSB(S) - 1);
+  uint32_t m_NOT = (MSB(S) - 1) & ~((LSB(S) << 1) - 1);
   S ^= m_NOT;
   return S;
 }
 
 uint32_t checksum(uint32_t S) {
-  uint32_t mask = (1U << 4) - 1;
+  uint32_t mask = (1U << 8) - 1;
   uint32_t c_S = S;
   uint8_t sum = 0;
   for (int i = 0; i < 4; i++) {
     sum ^= (c_S & mask);
 
-    c_S >>= 4;
+    c_S >>= 8;
   }
   return (S & ~mask) | sum;
 }
@@ -64,9 +64,9 @@ int main() {
     uint32_t S;
     scanf("%X", &S);
     if (overload(S)) {
-      printf("%X", (uint32_t)(-1));
+      printf("0x%08X\n", (uint32_t)(-1));
     } else {
-      printf("%X", checksum(bridging(S)));
+      printf("0x%08X\n", checksum(bridging(S)));
     }
   }
 }
