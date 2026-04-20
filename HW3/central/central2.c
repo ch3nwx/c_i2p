@@ -7,79 +7,21 @@
 typedef struct _Node {
   int id;
   int depth;
-  struct _Node **children;
-  int count;
+  struct _Node *ancestor[LOG]; // ancestor[k] = 2^k-th ancestor
 } Node;
 
-Node *Node_id[MAXN];
+Node *node[MAXN]; // node[i] = pointer to node with id i
 
-Node *create_note(int val) {
+Node *create_node(int id) {
   Node *n = malloc(sizeof(Node));
-  n->id = val;
+  n->id = id;
   n->depth = 0;
-  n->children = NULL;
-  n->count = 0;
-  Node_id[val] = n;
+  memset(n->ancestor, 0, sizeof(n->ancestor));
+  node[id] = n;
   return n;
 }
 
-void add_child(Node *parent, Node *child) {
-  parent->children =
-      realloc(parent->children, sizeof(Node *) * (parent->count + 1));
-  parent->children[parent->count++] = child;
-  child->depth = parent->depth + 1;
-}
-
-int euler[MAXN * 2];
-int first[MAXN];
-int euler_sz = 0;
-
-void dfs(Node *u) {
-  first[u->id] = euler_sz;
-  euler[euler_sz++] = u->id;
-  for (int i = 0; i < u->count; i++) {
-    dfs(u->children[i]);
-    euler[euler_sz++] = u->id;
-  }
-}
-
-int sparse[LOG][MAXN * 2];
-int lg[MAXN * 2];
-
-void build_sparse() {
-  lg[1] = 0;
-  for (int i = 2; i < euler_sz; i++)
-    lg[i] = lg[i / 2] + 1;
-
-  for (int i = 0; i < euler_sz; i++)
-    sparse[0][i] = i;
-
-  for (int k = 1; (1 << k) <= euler_sz; k++) {
-    for (int i = 0; i + (1 << k) <= euler_sz; i++) {
-      int a = sparse[k - 1][i];
-      int b = sparse[k - 1][i + (1 << (k - 1))];
-      sparse[k][i] = (Node_id[euler[a]]->depth <= Node_id[euler[b]]->depth) ? a : b;
-    }
-  }
-}
-
-int rmq(int l, int r) {
-  int k = lg[r - l + 1];
-  int a = sparse[k][l];
-  int b = sparse[k][r - (1 << k) + 1];
-  return (Node_id[euler[a]]->depth <= Node_id[euler[b]]->depth) ? a : b;
-}
-
-int lca(int u, int v) {
-  int l = first[u], r = first[v];
-  if (l > r) {
-    int tmp = l;
-    l = r;
-    r = tmp;
-  }
-  return euler[rmq(l, r)];
-}
-
+// Children adjacency list (for DFS to compute depths and ancestor[0])
 int adj_to[MAXN * 2], adj_next[MAXN * 2], adj_head[MAXN];
 int adj_cnt = 0;
 
@@ -89,14 +31,43 @@ void add_edge(int u, int v) {
   adj_head[u] = adj_cnt++;
 }
 
-void build_tree(int u, int par) {
-  for (int i = adj_head[u]; i != -1; i = adj_next[i]) {
-    int v = adj_to[i];
+// DFS: set depth and direct parent (ancestor[0])
+void dfs(Node *u, Node *par) {
+  u->ancestor[0] = par;
+  for (int i = adj_head[u->id]; i != -1; i = adj_next[i]) {
+    Node *v = node[adj_to[i]];
     if (v != par) {
-      add_child(Node_id[u], Node_id[v]);
-      build_tree(v, u);
+      v->depth = u->depth + 1;
+      dfs(v, u);
     }
   }
+}
+
+// Fill ancestor[k] for k = 1..LOG-1 using ancestor[k-1]
+void build_lifting(int N) {
+  for (int k = 1; k < LOG; k++)
+    for (int i = 1; i <= N; i++)
+      node[i]->ancestor[k] = node[i]->ancestor[k - 1]->ancestor[k - 1];
+}
+
+int lca(Node *u, Node *v) {
+  // Bring u and v to the same depth
+  if (u->depth < v->depth) { Node *t = u; u = v; v = t; }
+  int diff = u->depth - v->depth;
+  for (int k = 0; k < LOG; k++)
+    if ((diff >> k) & 1)
+      u = u->ancestor[k];
+
+  if (u == v) return u->id;
+
+  // Lift both until their parents converge
+  for (int k = LOG - 1; k >= 0; k--)
+    if (u->ancestor[k] != v->ancestor[k]) {
+      u = u->ancestor[k];
+      v = v->ancestor[k];
+    }
+
+  return u->ancestor[0]->id;
 }
 
 // Usage: ./central2 N Q p2 p3 ... pN qu1 qv1 qu2 qv2 ...
@@ -113,23 +84,25 @@ int main(int argc, char *argv[]) {
 
   memset(adj_head, -1, sizeof(adj_head));
   for (int i = 1; i <= N; i++)
-    create_note(i);
+    create_node(i);
 
-  // parent of node 2, 3, ..., N
   for (int i = 2; i <= N; i++) {
     int p = atoi(argv[idx++]);
     add_edge(p, i);
     add_edge(i, p);
   }
 
-  build_tree(1, -1);
-  dfs(Node_id[1]);
-  build_sparse();
+  // Root (node 1): depth 0, all ancestors point to itself
+  for (int k = 0; k < LOG; k++)
+    node[1]->ancestor[k] = node[1];
+
+  dfs(node[1], node[1]);
+  build_lifting(N);
 
   for (int i = 0; i < Q; i++) {
     int u = atoi(argv[idx++]);
     int v = atoi(argv[idx++]);
-    printf("%d\n", lca(u, v));
+    printf("%d\n", lca(node[u], node[v]));
   }
 
   return 0;
