@@ -254,3 +254,63 @@ To jump 2^k steps = jump 2^(k−1) steps twice. Root's all ancestors point to it
 | Simplicity | More steps (DFS, RMQ build) | Simpler logic |
 
 Binary lifting trades constant-time queries for simpler, more memory-efficient code — a good fit for most competitive programming constraints.
+
+---
+
+## Study Guide — Quick Memory Hooks
+
+### 🌊 1. Hot Spring
+> *"Count, kick, inherit mood, repeat."*
+
+- Circle of people, step K, kick person at step K, their tolerance becomes next K
+- **Key line:** `r = k % n` → if `r == 0`, clamp to `±n` (full lap = current person)
+- Move `|k| - 1` steps, not `|k|` — you're already on position 0
+- Negative K = go backwards
+
+### 🐘 2. Queue Correction
+> *"Find the gate (pre), flip the chain, reattach the ends."*
+
+- 4 pointers: `pre` (before l), `tail` (l-th node = new tail), `prev` (new head after flip), `cur` (node after r)
+- Reverse loop: `cur->next = prev`, advance both
+- Reconnect: `pre->next = prev`, `tail->next = cur`
+
+### 🌳 3. Same Tree
+> *"Parse to the same struct, then compare."*
+
+- Two formats, one internal tree — write one parser per format
+- **T parser:** starts on `(` → NIL if no `(`
+- **S parser:** starts on digit → NIL if no digit
+- Both consume their delimiters in exact order, recurse for left/right
+- Final check is just standard recursive tree equality
+
+### 📐 4. Central (Euler Tour)
+> *"Flatten → find range → shallowest = ancestor."*
+
+- DFS the tree, record every visit (including backtrack) → Euler tour array
+- LCA(u, v) = node with **minimum depth** between `first[u]` and `first[v]` in the tour
+- Sparse table answers range-min in O(1): `sparse[k][i]` = best index in `[i, i+2^k-1]`
+- Build bottom-up (k=1 to LOG), query with two overlapping windows of size `2^k`
+
+### ⬆️ 5. Central 2 (Binary Lifting)
+> *"Equalize depth → meet or lift together → parent is answer."*
+
+- Each node holds `ancestor[k]` = pointer to its 2^k-th ancestor
+- Build: `ancestor[k] = ancestor[k-1]->ancestor[k-1]` (jump half twice)
+- Root's ancestors all point to itself (safe sentinel)
+- LCA steps:
+  1. Lift deeper node by `diff` bits
+  2. If same → return
+  3. Lift both top-down, jump only when ancestors differ
+  4. Return `ancestor[0]` (one step above where they stopped)
+
+---
+
+## At-a-Glance Summary
+
+| # | Problem | Data Structure | Core Trick |
+|---|---------|---------------|------------|
+| 1 | Hot Spring | Circular doubly-linked list | Signed modulo + dynamic step |
+| 2 | Queue Correction | Singly linked list | 4-pointer in-place reversal |
+| 3 | Same Tree | Binary tree (built on parse) | Two recursive descent parsers |
+| 4 | Central | Tree + Euler array + sparse table | RMQ on flattened DFS tour |
+| 5 | Central 2 | Tree + `ancestor[LOG]` per node | Binary lifting with struct pointers |
