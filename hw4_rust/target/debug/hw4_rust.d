@@ -1,0 +1,1 @@
+/Users/wenxin/cs/c_i2p/hw4_rust/target/debug/hw4_rust: /Users/wenxin/cs/c_i2p/hw4_rust/src/kura.rs /Users/wenxin/cs/c_i2p/hw4_rust/src/main.rs /Users/wenxin/cs/c_i2p/hw4_rust/src/matrix.rs /Users/wenxin/cs/c_i2p/hw4_rust/src/scanner.rs /Users/wenxin/cs/c_i2p/hw4_rust/src/stack.rs /Users/wenxin/cs/c_i2p/hw4_rust/src/vending.rs
