@@ -1,0 +1,52 @@
+   0.200861208s  INFO prepare_target{force=false package_id=hw4_rust v0.1.0 (/Users/wenxin/cs/c_i2p/hw4_rust) target="hw4_rust"}: cargo::core::compiler::fingerprint: fingerprint error for hw4_rust v0.1.0 (/Users/wenxin/cs/c_i2p/hw4_rust)/Check { test: false }/TargetInner { name: "hw4_rust", doc: true, ..: with_path("/Users/wenxin/cs/c_i2p/hw4_rust/src/main.rs", Edition2024) }
+   0.200924750s  INFO prepare_target{force=false package_id=hw4_rust v0.1.0 (/Users/wenxin/cs/c_i2p/hw4_rust) target="hw4_rust"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/wenxin/cs/c_i2p/hw4_rust/target/debug/.fingerprint/hw4_rust-4e74855cbc1a657e/bin-hw4_rust`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: std::backtrace::Backtrace::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+   0.213076917s  INFO prepare_target{force=false package_id=hw4_rust v0.1.0 (/Users/wenxin/cs/c_i2p/hw4_rust) target="hw4_rust"}: cargo::core::compiler::fingerprint: fingerprint error for hw4_rust v0.1.0 (/Users/wenxin/cs/c_i2p/hw4_rust)/Check { test: true }/TargetInner { name: "hw4_rust", doc: true, ..: with_path("/Users/wenxin/cs/c_i2p/hw4_rust/src/main.rs", Edition2024) }
+   0.213090458s  INFO prepare_target{force=false package_id=hw4_rust v0.1.0 (/Users/wenxin/cs/c_i2p/hw4_rust) target="hw4_rust"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/wenxin/cs/c_i2p/hw4_rust/target/debug/.fingerprint/hw4_rust-d9217b31ae6ddeaf/test-bin-hw4_rust`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: std::backtrace::Backtrace::create
+   1: std::backtrace::Backtrace::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+    Checking hw4_rust v0.1.0 (/Users/wenxin/cs/c_i2p/hw4_rust)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.59s
