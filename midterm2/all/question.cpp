@@ -140,17 +140,56 @@ int station_main() {
 }
 
 
+// ============================ 14224 (electrical) ============================
+int electrical_main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    cin >> n;
+    long long *a = new long long[n];
+    for (int i = 0; i < n; i++) cin >> a[i];
+    cout << electrical::huffman(n, a);
+    delete[] a;
+    return 0;
+}
+
+
+// ============================ 13858 (salesman) ============================
+int salesman_main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int n;
+    cin >> n;
+    vector<vector<salesman::Edge>> adj(n);
+    long long total = 0;
+    for (int i = 0; i < n - 1; i++) {
+        int u, v;
+        long long w;
+        cin >> u >> v >> w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+        total += w;
+    }
+    cout << salesman::openLoopTSP(n, adj, total) << "\n";
+    return 0;
+}
+
+
 // ============================ dispatcher ============================
 int main(int argc, char **argv) {
     if (argc < 2) {
-        cerr << "usage: " << argv[0] << " <casino|kuoyang|corridor|station>\n";
+        cerr << "usage: " << argv[0] << " <casino|kuoyang|corridor|station|electrical|salesman>\n";
         return 1;
     }
     string p = argv[1];
-    if (p == "casino")   return casino_main();
-    if (p == "kuoyang")  return kuoyang_main();
-    if (p == "corridor") return corridor_main();
-    if (p == "station")  return station_main();
+    if (p == "casino")     return casino_main();
+    if (p == "kuoyang")    return kuoyang_main();
+    if (p == "corridor")   return corridor_main();
+    if (p == "station")    return station_main();
+    if (p == "electrical") return electrical_main();
+    if (p == "salesman")   return salesman_main();
     cerr << "unknown problem: " << p << "\n";
     return 1;
 }

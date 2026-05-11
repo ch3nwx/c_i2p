@@ -1,5 +1,7 @@
 #include "question.h"
 #include <iostream>
+#include <queue>
+#include <vector>
 #include <stdlib.h>
 using namespace std;
 
@@ -297,3 +299,53 @@ int check(int p, int c, int k) {
 }
 
 } // namespace station
+
+
+// ============================ 14224 (electrical) ============================
+namespace electrical {
+
+long long huffman(int n, long long *a) {
+    if (n <= 0) return 0;
+    if (n == 1) return a[0];
+
+    priority_queue<long long, vector<long long>, greater<long long>> pq;
+    for (int i = 0; i < n; i++) pq.push(a[i]);
+
+    long long total = 0;
+    while (pq.size() > 1) {
+        long long x = pq.top(); pq.pop();
+        long long y = pq.top(); pq.pop();
+        long long s = x + y;
+        total += s;
+        pq.push(s);
+    }
+    return total;
+}
+
+} // namespace electrical
+
+
+// ============================ 13858 (salesman) ============================
+namespace salesman {
+
+static long long dfs(int u, int parent, vector<vector<Edge>> &adj,
+                     long long &diameter) {
+    long long best1 = 0, best2 = 0;
+    for (Edge &e : adj[u]) {
+        if (e.to == parent) continue;
+        long long d = dfs(e.to, u, adj, diameter) + e.w;
+        if (d > best1)      { best2 = best1; best1 = d; }
+        else if (d > best2) { best2 = d; }
+    }
+    if (best1 + best2 > diameter) diameter = best1 + best2;
+    return best1;
+}
+
+long long openLoopTSP(int n, vector<vector<Edge>> &adj, long long total) {
+    if (n <= 1) return 0;
+    long long diameter = 0;
+    dfs(0, -1, adj, diameter);
+    return 2 * total - diameter;
+}
+
+} // namespace salesman

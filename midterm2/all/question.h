@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 
 // ============================ 13182 (casino) ============================
@@ -95,10 +96,28 @@ namespace station {
 }
 
 
+// ============================ 14224 (electrical) ============================
+namespace electrical {
+    long long huffman(int n, long long *a);
+}
+
+
+// ============================ 13858 (salesman) ============================
+namespace salesman {
+    struct Edge {
+        int to;
+        long long w;
+    };
+    long long openLoopTSP(int n, std::vector<std::vector<Edge>> &adj, long long total);
+}
+
+
 // ============================ per-problem entry points ============================
 int casino_main();
 int kuoyang_main();
 int corridor_main();
 int station_main();
+int electrical_main();
+int salesman_main();
 
 #endif

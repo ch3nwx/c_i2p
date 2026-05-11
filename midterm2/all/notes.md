@@ -421,6 +421,143 @@ The `(void)p` in the implementation silences an unused-parameter warning.
 
 ---
 
+## 14224 — Electrical Safety (Huffman coding)
+
+### The model
+We're building a binary tree where:
+- the outlet is the root,
+- power strips are internal nodes (each with exactly 2 children),
+- appliances are the leaves,
+- each edge's cost = the current flowing through it = sum of all leaf weights
+  in the subtree below it.
+
+Total cost = sum over edges = sum over leaves of (a_i × depth_i). That's the
+Huffman cost. Greedy works: repeatedly combine the two smallest subtree
+weights.
+
+### huffman
+```cpp
+long long huffman(int n, long long *a) {
+    if (n <= 0) return 0;
+    if (n == 1) return a[0]; // degenerate single-appliance case
+
+    priority_queue<long long, vector<long long>, greater<long long>> pq;
+    for (int i = 0; i < n; i++) pq.push(a[i]);
+
+    long long total = 0;
+    while (pq.size() > 1) {
+        long long x = pq.top(); pq.pop();
+        long long y = pq.top(); pq.pop();
+        long long s = x + y;
+        total += s;     // s is the current on the edge above the merged node
+        pq.push(s);
+    }
+    return total;
+}
+```
+- `priority_queue<..., greater<>>` = min-heap.
+- Why does adding `s = x + y` to total give the right answer? Because every
+  time a leaf is part of a merge, its weight gets added to `s` and thus to
+  total. A leaf at depth d participates in exactly d merges (each ancestor
+  edge), so its weight gets counted d times. That is exactly a_i × depth_i.
+- Use `long long` everywhere — the sum can be much larger than int.
+
+### electrical_main
+```cpp
+int electrical_main() {
+    int n; cin >> n;
+    long long *a = new long long[n];
+    for (int i = 0; i < n; i++) cin >> a[i];
+    cout << electrical::huffman(n, a);
+    ...
+}
+```
+No trailing newline — the problem explicitly says "You don't need to output a
+newline at the end of the output."
+
+---
+
+## 13858 — Salesman Traveling on Tree without Returning
+
+### The idea
+A closed-loop TSP on a tree (start + return) costs exactly `2 * sum_of_edge_weights`
+because every edge must be traversed in both directions to make the round trip.
+Dropping the "return to start" requirement means one path between start and
+end won't need to be retraced — and the longest path we can avoid retracing
+is the tree's **diameter**. So:
+
+```
+answer = 2 * total_weight - diameter
+```
+
+Pick the two endpoints of the diameter as the start and end of the walk. Every
+edge OUTSIDE the diameter is traversed twice (out-and-back from a branch);
+every edge ON the diameter is traversed only once. Net savings = the diameter.
+
+### Finding the diameter — ONE DFS
+At every node u, the longest path that *bends* at u is
+`(longest downward branch into one child)  +  (longest into another child)`.
+So during a single post-order DFS we just need to track, at each node, the
+TOP TWO values of `(down[child] + edge_weight)`. Their sum is a candidate
+diameter (a path passing through u); their max is what we return upward to
+the parent.
+
+```cpp
+static long long dfs(int u, int parent, vector<vector<Edge>> &adj,
+                     long long &diameter) {
+    long long best1 = 0, best2 = 0;          // top two downward paths from u
+    for (Edge &e : adj[u]) {
+        if (e.to == parent) continue;        // don't walk back up
+        long long d = dfs(e.to, u, adj, diameter) + e.w;
+        if (d > best1)      { best2 = best1; best1 = d; }
+        else if (d > best2) { best2 = d; }
+    }
+    if (best1 + best2 > diameter) diameter = best1 + best2;
+    return best1;                             // tell parent: longest branch through u
+}
+```
+Why only the top TWO? A diameter path going through u must enter via one
+child branch and leave via another — so it uses at most two of u's downward
+branches. Pairing the largest with the second-largest maximises that sum.
+The leaves' `best1 = best2 = 0` case is exactly what we want (a single node
+contributes nothing extra to a diameter passing through it).
+
+One DFS, O(N). No second pass needed (unlike the "BFS twice" trick).
+
+### openLoopTSP
+```cpp
+long long openLoopTSP(int n, vector<vector<Edge>> &adj, long long total) {
+    if (n <= 1) return 0;
+    long long diameter = 0;
+    dfs(0, -1, adj, diameter);
+    return 2 * total - diameter;
+}
+```
+- `n <= 1`: nothing to traverse.
+- Use `long long` everywhere — N + edge weights easily overflow int when
+  multiplied/summed.
+- Recursive DFS: clean code, works fine for trees up to ~10⁵ nodes on a
+  typical 8 MB stack. For 10⁶-node chain-shaped trees you'd need to either
+  raise the stack limit or rewrite this iteratively with an explicit stack.
+
+### salesman_main
+```cpp
+int n; cin >> n;
+vector<vector<Edge>> adj(n);
+long long total = 0;
+for (int i = 0; i < n - 1; i++) {
+    int u, v; long long w;
+    cin >> u >> v >> w;
+    adj[u].push_back({v, w});
+    adj[v].push_back({u, w});
+    total += w;
+}
+```
+N-1 edges in a tree of N nodes. Edges are undirected — push each one onto
+BOTH endpoints' adjacency lists. Nodes are 0-indexed in this problem.
+
+---
+
 ## question.cpp — entry points
 
 ### casino_main
@@ -439,15 +576,26 @@ Both keep their original C-style I/O (scanf/printf) since that's what the
 partial judge code used; only the `Node` type is qualified with the
 namespace.
 
+### electrical_main
+Reads N and N weights, calls `electrical::huffman`, prints the answer with
+**no trailing newline** (the problem explicitly says so).
+
+### salesman_main
+Reads N and N-1 undirected edges `u v w` into a `vector<vector<Edge>>`
+adjacency list, accumulating `total` along the way. Calls
+`salesman::openLoopTSP`.
+
 ### dispatcher
 ```cpp
 int main(int argc, char **argv) {
     if (argc < 2) { ...usage... }
     string p = argv[1];
-    if (p == "casino")   return casino_main();
-    if (p == "kuoyang")  return kuoyang_main();
-    if (p == "corridor") return corridor_main();
-    if (p == "station")  return station_main();
+    if (p == "casino")     return casino_main();
+    if (p == "kuoyang")    return kuoyang_main();
+    if (p == "corridor")   return corridor_main();
+    if (p == "station")    return station_main();
+    if (p == "electrical") return electrical_main();
+    if (p == "salesman")   return salesman_main();
     ...
 }
 ```
